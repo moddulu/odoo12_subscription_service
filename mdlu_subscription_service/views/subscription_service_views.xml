@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <record id="subscription_service_view_form" model="ir.ui.view">
+    <field name="name">subscription.service.form.view</field>
+    <field name="model">subscription.service</field>
+    <field name="arch" type="xml">
+      <form string="Subscription">
+        <header>
+          <button name="set_open" string="Start Subscription" type="object"
+                  attrs="{'invisible': [('state','=','open')]}" class="oe_highlight"/>
+          <button name="set_pending" string="To Renew" type="object"
+                  attrs="{'invisible': [('state','in',['pending','draft','close','cancel'])]}"/>
+          <button name="set_close" string="Close Subscription"
+                  type="object" attrs="{'invisible': [('state','in',['draft','close','cancel'])]}"/>
+          <button name="set_cancel" string="Cancel Subscription"
+                  type="object" attrs="{'invisible': [('state','in',['cancel','close'])]}"/>
+          <field name="state" widget="statusbar"/>
+        </header>
+        <sheet string="Subscription">
+          <div class="oe_button_box" name="button_box">
+            <button class="oe_stat_button"
+              icon="fa-book"
+              name="action_view_invoice"
+              type="object">
+              <field name="invoice_count" widget="statinfo" string="Invoices"/>
+            </button>
+          </div>
+          <div class="oe_title">
+            <h1>
+              <field name="display_name"/>
+            </h1>
+          </div>
+          <group name="main">
+              <group>
+                <field name="type"/>
+                <field name="partner_id" required="1" domain="[('supplier', '=', True)]"/>
+                <field name="code"/>
+                <field name="recurrency"/>
+                <field name="recurring_interval"/>
+                <label for="recurring_next_date" string="Date of Next Invoice"/>
+                <div>
+                  <field name="recurring_next_date"/>
+                  <button string="&#8658; Generate Invoice" class="oe_link" name="recurring_invoice"
+                          type="object" />
+                </div>
+              </group>
+              <group>
+              	<label for="user_id" string="Representative"/>
+                <!-- <label for="user_id" t-if="type == 'purchase'" string="Purchase Rep"/>
+                <label for="user_id" t-if="type == 'sale'" string="Sales Rep"/> -->
+                <field name="user_id" nolabel="1"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="currency_id" required="1"/>
+                <field name="payment_term_id"/>
+                <field name="date_start"/>
+                <field name="date_end"/>
+              </group>
+          </group>
+          <notebook>
+              <page string="Subscription Lines" id="lines">
+                  <div>
+                      <field name="recurring_invoice_line_ids" context="{'type':type}">
+                          <tree editable="bottom">
+                              <field name="product_id"/>
+                              <field name="name"/>
+                              <field name="analytic_account_id"/>
+                              <field name="analytic_tag_ids" widget="many2many_tags"/>
+                              <field name="qty"/>
+                              <field name="uom_id"/>
+                              <field name="discount"/>
+                              <field name="unit_price"/>
+                              <field name="sub_line_tax_ids" widget="many2many_tags"/>
+                              <field name="subtotal"/>
+                          </tree>
+                      </field>
+                      <group class="oe_subtotal_footer oe_right">
+                        <field name="amount_untaxed" widget="monetary" options="{'currency_field': 'currency_id'}"
+                          modifiers="{'readonly': true}"/>
+                        <field name="recurring_amount_tax" widget="monetary" options="{'currency_field': 'currency_id'}"
+                          modifiers="{'readonly': true}"/>
+                        <field name="recurring_total" class="oe_subtotal_footer_separator"
+                            widget="monetary" options="{'currency_field': 'currency_id'}"
+                            modifiers="{'readonly': true}"/>
+                      </group>
+                  </div>
+              </page>
+          </notebook>
+          <div>
+              <field name="description"/>
+          </div>
+        </sheet>
+        <div class="oe_chatter">
+          <field name="message_follower_ids" widget="mail_followers"/>
+          <field name="message_ids" widget="mail_thread"/>
+        </div>
+      </form>
+    </field>
+  </record>
+
+  <record id="subscription_service_view_list" model="ir.ui.view">
+        <field name="name">subscription.service.list</field>
+        <field name="model">subscription.service</field>
+        <field name="arch" type="xml">
+            <tree string="Purchase Subscriptions" decoration-info="state=='draft'" decoration-danger="state=='pending'" decoration-muted="state in ('cancel','close')">
+                <field name="code"/>
+                <field name="partner_id"/>
+                <field name="type"/>
+                <field name="recurring_next_date"/>
+                <field name="user_id"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="recurring_total"/>
+                <field name="state"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="subscription_service_view_search" model="ir.ui.view">
+        <field name="name">subscription.service.search</field>
+        <field name="model">subscription.service</field>
+        <field name="arch" type="xml">
+            <search string="Search Subscription Services">
+                <field name="name" string="Contract"/>
+                <field name="partner_id"/>
+                <field name="state"/>
+                <field name="user_id"/>
+                <field name="date_end"/>
+                <filter name="my_subscriptions" string="My Subscriptions" domain="[('user_id', '=', uid)]" />
+                <filter name="so_subscriptions" string="Sale Subscriptions" domain="[('type', '=', 'sale')]" />
+                <filter name="po_subscriptions" string="Purchase Subscriptions" domain="[('type', '=', 'purchase')]" />
+                <filter name="new" string="New" domain="[('state','=','draft')]" help="New Contracts"/>
+                <filter name="open" string="In Progress" domain="[('state','=','open')]" help="Contracts in progress"/>
+                <filter name="pending" string="To Renew" domain="[('state','=','pending')]" help="Pending contracts"/>
+                <filter name="closed" string="Closed" domain="[('state','=','close')]" help="Closed contracts"/>
+                <filter name="cancelled" string="Cancelled" domain="[('state','=','cancelled')]" help="Cancelled contracts"/>
+                <separator/>
+                <filter name="expired"
+                    string="Expired"
+                    domain="[('state','in',('open','draft','pending')), ('date_end', '!=', False), ('date_end', '&lt;=', time.strftime('%Y-%m-%d'))]"
+                    help="End date passed" />
+                <filter name="expiring_soon"
+                    string="Expiring soon"
+                    domain="[('date_end', '!=', False), ('date_end', '&lt;=', (context_today() + relativedelta(months=1)).strftime('%Y-%m-%d'))]"
+                    help="End date is in the next month" />
+                <group expand="0" string="Group By">
+                  <filter string="Purchases Rep" name="user" context="{'group_by':'user_id'}" help="User"/>
+                  <filter string="Service Type" name="user" context="{'group_by':'type'}"/>
+                  <filter string="Status" name="status" context="{'group_by':'state'}"/>
+                  <filter string="Provider" name="provider" context="{'group_by':'partner_id'}"/>
+                  <filter string="Start Date" name="start_date" context="{'group_by' : 'date_start'}" />
+                  <filter string="End Date" name="end_date" context="{'group_by' : 'date_end'}" />
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="subscription_service_view_graph" model="ir.ui.view">
+        <field name="name">subscription.service.graph</field>
+        <field name="model">subscription.service</field>
+        <field name="arch" type="xml">
+            <graph string="Purchase Subscriptions">
+                <field name="partner_id"/>
+                <field name="recurring_total" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="subscription_service_view_pivot" model="ir.ui.view">
+        <field name="name">subscription.service.pivot</field>
+        <field name="model">subscription.service</field>
+        <field name="arch" type="xml">
+            <pivot string="Subscriptions">
+                <field name="partner_id"/>
+                <field name="recurring_total" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="subscription_service_action" model="ir.actions.act_window">
+        <field name="name">Subscriptions Services</field>
+        <field name="res_model">subscription.service</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">tree,form,pivot,graph</field>
+        <field name="context">{'search_default_user_id':uid, 'user_id': uid,}</field>
+        <field name="help" type="html">
+            <p class="oe_view_nocontent_create">
+                Click to create a new contract.
+            </p><p>
+                Use contracts to follow tasks, issues, timesheets or invoicing based on
+                work done, expenses and/or purchase orders. Odoo will automatically manage
+                the alerts for the renewal of the contracts to the right salesperson.
+            </p>
+        </field>
+    </record>
+
+    <menuitem id="menu_subscription_service_root"
+      name="Subscription Services"
+      web_icon="mdlu_subscription_service,static/description/icon.png"
+      action="subscription_service_action"/>
+      <!-- groups="purchase.group_purchase_manager, sales_team.group_sale_manager"/> -->
+
+    <menuitem
+      id="menu_subscription_service"
+      name="Subscriptions"
+      parent="menu_subscription_service_root"
+      sequence="5"/>
+
+    <record id="subscription_service_action_pending" model="ir.actions.act_window">
+        <field name="name">Subscriptions to Renew</field>
+        <field name="res_model">subscription.service</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">tree,form,pivot,graph</field>
+        <field name="context">{'search_default_user_id':uid, 'search_default_pending':1, 'search_default_renew':1}</field>
+        <field name="help" type="html">
+          <p class="oe_view_nocontent_create">
+            Click to define a new contract.
+          </p><p>
+            You will find here the contracts to be renewed because the
+            end date is passed or the working effort is higher than the
+            maximum authorized one.
+          </p><p>
+            Odoo automatically sets contracts to be renewed in a pending
+            state. After the negociation, the salesman should close or renew
+            pending contracts.
+          </p>
+        </field>
+    </record>
+
+
+    <!-- Menuitems -->
+    <menuitem
+      name="Subscriptions to Renew"
+      action="subscription_service_action_pending"
+      id="menu_subscription_service_pending"
+      sequence="2"
+      parent="menu_subscription_service"/>
+
+    <menuitem
+      name="Subscriptions"
+      action="subscription_service_action"
+      id="menu_subscription_service_action"
+      sequence="1"
+      parent="menu_subscription_service"/>
+</odoo>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="assets_frontend" name="Customer portal assets" inherit_id="web.assets_frontend">
+      <xpath expr="." position="inside">
+          <link rel="stylesheet" type="text/scss" href="/mdlu_subscription_service/static/src/scss/portal_subscription.scss"/>
+          <script type="text/javascript" src="/mdlu_subscription_service/static/src/js/portal_subscription.js"></script>
+      </xpath>
+    </template>
+</odoo>

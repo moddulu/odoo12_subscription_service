@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding='UTF-8'?>
+<!--
+    © 2014 - 2017 Sudokeys (Nicolas Potier <nicolas.potier@sudokeys.com>)
+    License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl)
+ -->
+<odoo>
+    <record id="purchase_subscription_cron" model="ir.cron">
+        <field name="name">Subscription Services: Expiration</field>
+        <field name="active" eval="True"/>
+        <field name="state">code</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">weeks</field>
+        <field name="numbercall">-1</field>
+        <field name="model_id" ref="model_subscription_service"/>
+        <field name="code">model.cron_subscription_service()</field>
+    </record>
+
+    <record id="purchase_subscription_cron_for_invoice" model="ir.cron">
+       <field name="name">Subscription Services: Generate Recurring Invoices and Payments</field>
+       <field name="active" eval="True"/>
+       <field name="state">code</field>
+       <field name="interval_number">1</field>
+       <field name="interval_type">days</field>
+       <field name="numbercall">-1</field>
+       <field name="model_id" ref="model_subscription_service"/>
+       <field name="code">model._cron_recurring_create_invoice()</field>
+       <field name="args" eval="'()'"/>
+    </record>
+
+</odoo>

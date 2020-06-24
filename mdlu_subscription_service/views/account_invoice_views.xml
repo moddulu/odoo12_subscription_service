@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <data>
+    <record id="mdlu_subscription_service_vendor_form" model="ir.ui.view">
+      <field name="name">mdlu.subscription.service.vendor.form</field>
+      <field name="model">account.invoice</field>
+      <field name="inherit_id" ref="account.invoice_supplier_form"/>
+      <field name="arch" type="xml">
+        <xpath expr="//field[@name='origin']" position="attributes">
+          <attribute name="attrs">{'invisible': [('subscription_id', '!=', False)]}</attribute>
+        </xpath>
+        <xpath  expr="//field[@name='origin']" position="before">
+          <field name="subscription_id" string="Source Document" readonly="1" attrs="{'invisible': [('subscription_id', '=', False)]}"/>
+        </xpath>
+      </field>
+    </record>
+
+    <record id="mdlu_subscription_service_customer_form" model="ir.ui.view">
+      <field name="name">mdlu.subscription.service.customer.form</field>
+      <field name="model">account.invoice</field>
+      <field name="inherit_id" ref="account.invoice_form"/>
+      <field name="arch" type="xml">
+        <xpath expr="//page[@name='other_info']/group/group[2]/field[@name='origin']" position="attributes">
+          <attribute name="attrs">{'invisible': [('subscription_id', '!=', False)]}</attribute>
+        </xpath>
+        <xpath  expr="//page[@name='other_info']/group/group[2]/field[@name='origin']" position="before">
+          <field name="subscription_id" string="Source Document" readonly="1" attrs="{'invisible': [('subscription_id', '=', False)]}"/>
+        </xpath>
+      </field>
+    </record>
+  </data>
+</odoo>

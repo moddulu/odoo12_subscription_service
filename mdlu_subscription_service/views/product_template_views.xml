@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    © 2014 - 2017 Sudokeys (Nicolas Potier <nicolas.potier@sudokeys.com>)
+    License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl)
+ -->
+<odoo>
+    <record id="product_template_search_view_inherit_subscription_service" model="ir.ui.view">
+        <field name="name">mdlu.product.template.search.inherit</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_search_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='filter_to_sell']" position="after">
+                <filter name="filter_recurring_po" string="Purchase Subscription products" domain="[('po_subscription', '=', True)]"/>
+                <filter name="filter_recurring_so" string="Sale Subscription products" domain="[('so_subscription', '=', True)]"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="product_template_view_form_recurring_purchase" model="ir.ui.view">
+        <field name="name">subscription.service.product.template.form.inherit</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='options']" position="inside">
+                <div>
+                    <field name="po_subscription"/>
+                    <label for="po_subscription"/>
+                </div>
+                <div>
+                    <field name="so_subscription"/>
+                    <label for="so_subscription"/>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
